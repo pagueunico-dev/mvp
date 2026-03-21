@@ -23,6 +23,7 @@ services:
       NODE_ENV: development
       PORT: 3000
       DATABASE_URL: postgres://${POSTGRES_USER:-mvp}:${POSTGRES_PASSWORD:-mvp}@db:5432/${POSTGRES_DB:-mvp}
+      JWT_SECRET: ${JWT_SECRET:-mvp-docker-dev-secret}
     ports:
       - "3000:3000"
     volumes:
@@ -31,6 +32,16 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 45s
 
   web:
     build:
@@ -44,7 +55,8 @@ services:
       - ./frontend:/app
       - /app/node_modules
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
 volumes:
   pgdata:

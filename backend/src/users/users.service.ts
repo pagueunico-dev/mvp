@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcryptjs';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 
@@ -10,20 +11,28 @@ export class UsersService {
     private readonly users: Repository<User>,
   ) {}
 
-  findAll(): Promise<User[]> {
-    return this.users.find();
-  }
-
   findOne(id: string): Promise<User | null> {
     return this.users.findOne({ where: { id } });
   }
 
-  async ensureDemoUser(): Promise<User> {
-    let u = await this.users.findOne({ where: { email: 'demo@mvp.local' } });
+  async findWithPasswordByLogin(username: string): Promise<User | null> {
+    return this.users
+      .createQueryBuilder('u')
+      .addSelect('u.passwordHash')
+      .where('u.loginUsername = :username', { username })
+      .getOne();
+  }
+
+  async ensureAdminUser(): Promise<User> {
+    let u = await this.users.findOne({ where: { loginUsername: 'admin' } });
     if (!u) {
+      const passwordHash = await bcrypt.hash('admin', 10);
       u = this.users.create({
-        email: 'demo@mvp.local',
-        name: 'Usuário demo',
+        email: 'admin@mvp.local',
+        name: 'Administrador',
+        loginUsername: 'admin',
+        passwordHash,
+        role: 'admin',
       });
       await this.users.save(u);
     }

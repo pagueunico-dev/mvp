@@ -10,7 +10,7 @@ export class SeedService implements OnModuleInit {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    const user = await this.users.ensureDemoUser();
+    const user = await this.users.ensureAdminUser();
     const existing = await this.accounts.countByUser(user.id);
     if (existing > 0) return;
     await this.accounts.create(user.id, {
@@ -24,7 +24,7 @@ export class SeedService implements OnModuleInit {
       dueDate: '2025-04-12',
     });
     await this.accounts.create(user.id, {
-      title: 'Água',
+      title: 'Agua',
       amount: 72.5,
       dueDate: '2025-04-15',
     });

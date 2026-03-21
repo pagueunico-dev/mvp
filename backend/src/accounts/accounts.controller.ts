@@ -7,52 +7,53 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
-  Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { User } from '../users/entities/user.entity';
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 
 @Controller('accounts')
+@UseGuards(JwtAuthGuard)
 export class AccountsController {
   constructor(private readonly accounts: AccountsService) {}
 
   @Get()
-  list(@Query('userId', ParseUUIDPipe) userId: string) {
-    return this.accounts.findByUser(userId);
+  list(@Request() req: { user: User }) {
+    return this.accounts.findByUser(req.user.id);
   }
 
   @Post()
-  create(
-    @Query('userId', ParseUUIDPipe) userId: string,
-    @Body() dto: CreateAccountDto,
-  ) {
-    return this.accounts.create(userId, dto);
+  create(@Request() req: { user: User }, @Body() dto: CreateAccountDto) {
+    return this.accounts.create(req.user.id, dto);
   }
 
   @Get(':id')
   one(
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('userId', ParseUUIDPipe) userId: string,
+    @Request() req: { user: User },
   ) {
-    return this.accounts.findOne(id, userId);
+    return this.accounts.findOne(id, req.user.id);
   }
 
   @Patch(':id')
   update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('userId', ParseUUIDPipe) userId: string,
+    @Request() req: { user: User },
     @Body() dto: UpdateAccountDto,
   ) {
-    return this.accounts.update(id, userId, dto);
+    return this.accounts.update(id, req.user.id, dto);
   }
 
   @Delete(':id')
   async remove(
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('userId', ParseUUIDPipe) userId: string,
+    @Request() req: { user: User },
   ) {
-    await this.accounts.remove(id, userId);
+    await this.accounts.remove(id, req.user.id);
     return { ok: true };
   }
 }

@@ -5,43 +5,50 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
-  Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
+import { Public } from '../auth/decorators/public.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { User } from '../users/entities/user.entity';
 import { ConsolidatePaymentsDto } from './dto/consolidate.dto';
 import { MockMultiDto } from './dto/mock-multi.dto';
 import { PaymentsService } from './payments.service';
 
 @Controller('payments')
+@UseGuards(JwtAuthGuard)
 export class PaymentsController {
   constructor(private readonly payments: PaymentsService) {}
 
-  /** Resposta JSON fixa para testes (regras/mocks). */
+  @Public()
   @Get('mock')
   mock() {
     return this.payments.mockResponse();
   }
 
   @Get()
-  list(@Query('userId', ParseUUIDPipe) userId: string) {
-    return this.payments.findByUser(userId);
+  list(@Request() req: { user: User }) {
+    return this.payments.findByUser(req.user.id);
   }
 
   @Post('consolidate')
-  consolidate(@Body() dto: ConsolidatePaymentsDto) {
-    return this.payments.consolidate(dto);
+  consolidate(
+    @Request() req: { user: User },
+    @Body() dto: ConsolidatePaymentsDto,
+  ) {
+    return this.payments.consolidate(dto, req.user.id);
   }
 
-  /** Gera N pagamentos mock (opcional: painel / URL separada). */
   @Post('mock-multi')
-  mockMulti(@Body() dto: MockMultiDto) {
-    return this.payments.createMockMulti(dto);
+  mockMulti(@Request() req: { user: User }, @Body() dto: MockMultiDto) {
+    return this.payments.createMockMulti(dto, req.user.id);
   }
 
   @Post(':id/simulate-pay')
   simulatePay(
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('userId', ParseUUIDPipe) userId: string,
+    @Request() req: { user: User },
   ) {
-    return this.payments.simulatePay(id, userId);
+    return this.payments.simulatePay(id, req.user.id);
   }
 }

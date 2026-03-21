@@ -5,15 +5,11 @@ import {
   IsIn,
   IsInt,
   IsOptional,
-  IsUUID,
   Max,
   Min,
 } from 'class-validator';
 
 export class MockMultiDto {
-  @IsUUID()
-  userId: string;
-
   @IsOptional()
   @Type(() => Number)
   @IsInt()
