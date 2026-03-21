@@ -1,0 +1,18 @@
+# Credenciais — nunca versionar
+regras/senhas_e_conexoes.md
+
+# Ambiente local
+.env
+.env.*
+!.env.example
+
+# Build / deps
+node_modules/
+backend/dist/
+frontend/dist/
+
+# OS / IDE
+Thumbs.db
+.DS_Store
+.idea/
+.vscode/
