@@ -5,18 +5,30 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true })
+  @Column({ type: 'varchar', length: 255, unique: true })
   email: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   name: string;
 
-  @Column({ name: 'login_username', unique: true, nullable: true })
+  @Column({
+    name: 'login_username',
+    type: 'varchar',
+    length: 64,
+    unique: true,
+    nullable: true,
+  })
   loginUsername: string | null;
 
-  @Column({ name: 'password_hash', nullable: true, select: false })
+  @Column({
+    name: 'password_hash',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+    select: false,
+  })
   passwordHash: string | null;
 
-  @Column({ default: 'admin' })
+  @Column({ type: 'varchar', length: 32, default: 'admin' })
   role: string;
 }
